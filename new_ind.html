@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#111827" />
+<title>ఒక చిన్న సర్‌ప్రైజ్ 🎁</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Telugu:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================= */
+  /*  THEME                                                        */
+  /* ============================================================= */
+  :root {
+    --correct: #16a34a;
+    --correct-bg: #dcfce7;
+    --wrong: #dc2626;
+    --wrong-bg: #fee2e2;
+    --radius: 24px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+
+  body {
+    font-family: "Anek Telugu", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1f2937;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Full-screen themed background layer (swapped per question) */
+  #bgLayer {
+    position: fixed; inset: 0; z-index: -2;
+    background: linear-gradient(135deg, #6d28d9, #db2777, #f59e0b);
+    background-size: cover;
+    background-position: center;
+    transition: background-image .5s ease, background .5s ease, opacity .4s ease;
+  }
+  /* Dark scrim so the funky card always pops */
+  #bgLayer::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,.15), rgba(0,0,0,.5));
+  }
+  /* Small visual (your image) at the top of the question card */
+  .q-visual { text-align: center; margin-bottom: 16px; }
+  .q-visual img {
+    max-width: 100%; max-height: 150px; border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.32);
+    object-fit: cover;
+  }
+
+  .app { width: 100%; max-width: 460px; }
+
+  /* ---- Funky card ---- */
+  .card {
+    background: rgba(255,255,255,0.13);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border-radius: var(--radius);
+    padding: 30px 24px 32px;
+    border: 1px solid rgba(255,255,255,0.30);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.35);
+    color: #fff;
+    animation: pop 0.5s cubic-bezier(.2, .8, .2, 1);
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(16px) scale(.98); }
+    to   { opacity: 1; transform: none; }
+  }
+  .hidden { display: none !important; }
+
+  .emoji-big { font-size: 62px; text-align: center; margin-bottom: 6px; animation: wobble 3.5s ease-in-out infinite; }
+  @keyframes wobble { 0%,100%{transform:rotate(-4deg);} 50%{transform:rotate(4deg);} }
+  h1 { font-size: 27px; text-align: center; margin: 0 0 10px; font-weight: 600; letter-spacing: -.01em; }
+  .lead { color: rgba(255,255,255,0.82); text-align: center; font-size: 15px; line-height: 1.6; margin: 0 0 24px; }
+
+  .btn {
+    display: block; width: 100%;
+    border: none; border-radius: 16px;
+    padding: 16px; font-family: inherit; font-size: 17px; font-weight: 600;
+    color: #111827;
+    background: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+    transition: transform .12s ease, box-shadow .2s ease, opacity .2s ease;
+  }
+  .btn:hover { opacity: .94; }
+  .btn:active { transform: translateY(2px); box-shadow: 0 6px 16px rgba(0,0,0,0.28); }
+
+  /* ---- Progress dots ---- */
+  .progress { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.35); transition: .3s; }
+  .dot.done { background: #fff; }
+  .dot.current { background: #fff; transform: scale(1.5); box-shadow: 0 0 10px rgba(255,255,255,0.9); }
+
+  .qcount {
+    text-align: center; font-size: 12px; font-weight: 600; letter-spacing: .16em;
+    color: rgba(255,255,255,0.85); margin-bottom: 14px; text-transform: uppercase;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+    display: inline-block; padding: 6px 16px; border-radius: 999px;
+    position: relative; left: 50%; transform: translateX(-50%);
+  }
+  .question { font-size: 22px; font-weight: 600; line-height: 1.42; margin: 0 0 24px; text-align: center; color: #fff; }
+
+  /* ---- Funky options ---- */
+  .options { display: flex; flex-direction: column; gap: 12px; }
+  .option {
+    text-align: left; font-family: inherit;
+    border: 1px solid rgba(255,255,255,0.28); background: rgba(255,255,255,0.10);
+    border-radius: 14px;
+    padding: 15px 16px; font-size: 16px; font-weight: 500; color: #fff;
+    cursor: pointer; display: flex; align-items: center; gap: 12px;
+    backdrop-filter: blur(4px);
+    transition: transform .12s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .option:hover { background: rgba(255,255,255,0.20); border-color: rgba(255,255,255,0.5); }
+  .option:active { transform: scale(.99); }
+  .option .letter {
+    flex: 0 0 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.35);
+    display: grid; place-items: center; font-size: 14px; font-weight: 600;
+  }
+  .option.correct {
+    background: rgba(22,163,74,0.9); border-color: #4ade80;
+    box-shadow: 0 0 22px rgba(34,197,94,0.55);
+  }
+  .option.correct .letter { background: #fff; color: var(--correct); }
+  .option.wrong {
+    background: rgba(220,38,38,0.9); border-color: #f87171;
+    box-shadow: 0 0 22px rgba(239,68,68,0.5); animation: shake .4s;
+  }
+  .option.wrong .letter { background: #fff; color: var(--wrong); }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+
+  .feedback {
+    margin-top: 20px; text-align: center; font-size: 16px; font-weight: 700;
+    min-height: 24px;
+  }
+  .feedback.ok  { color: #86efac; }
+  .feedback.no  { color: #fca5a5; }
+
+  /* ---- Gift screen ---- */
+  .gift-grid { display: flex; justify-content: center; gap: 14px; margin-top: 22px; flex-wrap: wrap; }
+  .gift {
+    font-size: 82px; background: none; border: none; cursor: pointer; padding: 8px;
+    animation: bob 2s ease-in-out infinite; transition: transform .15s;
+  }
+  /* Same 🎁 emoji, three different colors via hue-rotate */
+  .gift:nth-child(1) { filter: hue-rotate(50deg); }                      /* yellow */
+  .gift:nth-child(2) { animation-delay: .3s; filter: hue-rotate(120deg); } /* green */
+  .gift:nth-child(3) { animation-delay: .6s; filter: hue-rotate(260deg); } /* purple */
+  .gift:active { transform: scale(.88); }
+  @keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-9px);} }
+
+  /* ---- Countdown ---- */
+  #countdown {
+    position: fixed; inset: 0; z-index: 20;
+    background: rgba(17,24,39,0.92); backdrop-filter: blur(8px); display: grid; place-items: center; color: #fff;
+  }
+  .count-num { font-size: 130px; font-weight: 600; animation: countpop .8s ease; }
+  @keyframes countpop { 0%{transform:scale(.3);opacity:0;} 40%{transform:scale(1.15);opacity:1;} 100%{transform:scale(1);} }
+
+  /* ---- Reveal (full screen: top 45% photo, bottom 55% text) ---- */
+  .reveal-screen {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column;
+    background: linear-gradient(135deg, #6d28d9, #db2777, #f59e0b);
+  }
+  .reveal-photo { 
+    flex: 0 0 45%; overflow: hidden; 
+    display: flex;align-items: center; justify-content: center;
+    padding-top: 30px;
+    }
+  .reveal-photo img {
+    width: 75%; height: 100%; object-fit: contain; display: block;
+    animation: pop .6s cubic-bezier(.2, .8, .2, 1);
+  }
+  .reveal-text {
+    flex: 0 0 55%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 28px 24px; overflow-y: auto;
+    animation: pop .6s cubic-bezier(.2, .8, .2, 1);
+  }
+  .reveal-msg {
+    font-size: 28px; line-height: 1.6; text-align: center;
+    white-space: pre-line; font-weight: 600; color: #fff;
+  }
+
+  canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 15; }
+</style>
+</head>
+<body>
+  <div id="bgLayer"></div>
+
+  <div class="app">
+
+    <!-- ===================== WELCOME ===================== -->
+    <section id="welcome" class="card">
+      <div class="emoji-big">🎁</div>
+      <h1>మీ G.K. ని టెస్ట్ చేసుకోవాలని ఉందా ? అయితే ఈ క్విజ్ ట్రై చేయండి, ప్రైజ్ గెలవండి</h1>
+      <p class="lead">7 చిన్న సాధారణ ప్రశ్నలు. అన్నింటికీ సరైన సమాధానం ఇవ్వండి — చివరిలో మీకు ఒక బహుమతి ఉంటుంది ! </p>
+      <button class="btn" id="startBtn">మొదలుపెడదామా? →</button>
+    </section>
+
+    <!-- ===================== QUIZ ===================== -->
+    <section id="quiz" class="card hidden">
+      <div class="progress" id="progress"></div>
+      <div class="qcount" id="qcount"></div>
+      <div class="q-visual" id="qVisual"></div>
+      <p class="question" id="questionText"></p>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+    </section>
+
+    <!-- ===================== GIFT CHOICE ===================== -->
+    <section id="gifts" class="card hidden">
+      <div class="emoji-big">🎉</div>
+      <h1>శభాష్! 7 / 7 సరైన సమాధానాలు!</h1>
+      <p class="lead"> ఇప్పుడు ఒక గిఫ్ట్ బాక్స్‌ను ఎంచుకోండి ! </p>
+      <div class="gift-grid">
+        <button class="gift" data-gift="1">🎁</button>
+        <button class="gift" data-gift="2">🎁</button>
+        <button class="gift" data-gift="3">🎁</button>
+      </div>
+    </section>
+
+    <!-- ===================== REVEAL ===================== -->
+    <section id="reveal" class="reveal-screen hidden">
+      <div class="reveal-photo"><img id="revealPhoto" src="" alt=""></div>
+      <div class="reveal-text">
+        <div class="reveal-msg" id="revealMsg"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <canvas id="confetti"></canvas>
+
+<script>
+/* ================================================================= */
+/*  EDIT YOUR CONTENT HERE                                           */
+/*  - "answer" is the INDEX (0-3) of the correct option.            */
+/*  - "bg"    = CSS background gradient for the full screen.         */
+/*  - "image" = REQUIRED path/URL to your PNG/JPEG (shown at top).   */
+/*              e.g. image: "images/mars.png"                        */
+/* ================================================================= */
+const QUESTIONS = [
+  {
+    q: "వినాయక స్వామి యొక్క ఇష్టమైన స్వీట్ ఏది ?",
+    options: ["హల్వా", "⁠రసగుల్ల", "⁠జలేబి", "మోదకం"],
+    answer: 3,
+    bg: "radial-gradient(circle at 30% 20%, #7c2d12, #450a0a 60%, #1c0505)",
+    image: "images/ganesha.jpeg"
+  },
+  {
+    q: "సుబ్రమణ్య స్వామి యొక్క వాహనం ఏంటి ? ",
+    options: ["ఏనుగు", "నెమలి", "పులి", "నంది"],
+    answer: 1,
+    bg: "linear-gradient(160deg, #0ea5e9, #0369a1 55%, #082f49)",
+    image: "images/karthikeya.jpeg"
+  },
+  {
+    q: "నేహా - తేజ్దీప్ ల వివాహం ఎప్పడు జరిగింది ? ",
+    options: ["మే 10 2022", "మే 25 2022", "మే 17 2022", "మే 15 2022"],
+    answer: 3,
+    bg: "linear-gradient(160deg, #f59e0b, #b45309 60%, #78350f)",
+    image: "images/marriage.jpeg"
+  },
+  {
+    q: "శ్రీ కృష్ణుని ప్రియమైన సంగీత వాద్యము ఏది ?",
+    options: ["తబలా", "వీణ", "వేణువు", "సన్నాయి"],
+    answer: 2,
+    bg: "linear-gradient(160deg, #6366f1, #4338ca 55%, #1e1b4b)",
+    image: "images/krishna.jpeg"
+  },
+  {
+    q: "నేహ - తేజ్దీప్ ఇప్పుడు పని చేసే కంపెనీ పేరు ?",
+    options: ["Hitachi", "Zoho", "Woven By Toyota", "Funai"],
+    answer: 2,
+    bg: "linear-gradient(160deg, #ec4899, #8b5cf6 45%, #06b6d4)",
+    image: "images/company.png"
+  },
+  {
+    q: "లక్ష్మి దేవిని ఎన్ని రూపాల్లో పూజిస్తారు ? ?",
+    options: ["6", "8", "4", "9"],
+    answer: 1,
+    bg: "linear-gradient(160deg, #ef4444, #b91c1c 55%, #7f1d1d)",
+    image: "images/lakshmi.jpeg"
+  },
+  {
+    q: "జపాన్ లో నేహా - తేజ్దీప్ కలిసి చేసిన స్కిట్ ఏ సినిమా గురించి ? ",
+    options: ["ఛత్రపతి", "శంకర్ దాదా ఎంబీబీఎస్", "⁠పుష్ప", "బాహుబలి"],
+    answer: 2,
+    bg: "linear-gradient(160deg, #22c55e, #15803d 55%, #14532d)",
+    image: "images/pushpa.jpeg"
+  }
+];
+
+// Path/URL to the surprise photo shown on the reveal screen (top 45%).
+const REVEAL_PHOTO = "images/surprise.jpeg";
+const REVEAL_MESSAGE =
+`
+మీకు ఎప్పటికీ గుర్తుండిపోయే ఒక కానుక… ❤️
+మే 2027 లో మీరు అబ్బా - జేజి కాబోతున్నారు! 🥹👣
+
+మా ప్రేమకు ఇప్పుడు
+ఒక చిన్న గుండె చప్పుడు తోడవుతోంది. 👶🏻❤️
+
+ఇదే మేము మీకు ఇవ్వబోయే
+అతి పెద్ద, అందమైన కానుక. ❤️`;
+
+const MSG_CORRECT = "✓ సరైన సమాధానం! భలే చెప్పారు.";
+const MSG_WRONG   = "✗ కాదు — మళ్లీ ప్రయత్నించండి!";
+
+/* ================================================================= */
+/*  APP LOGIC — no need to edit below                               */
+/* ================================================================= */
+const el = (id) => document.getElementById(id);
+let current = 0;
+let locked = false;
+
+function buzz(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
+
+function show(sectionId) {
+  ["welcome", "quiz", "gifts", "reveal"].forEach(s =>
+    el(s).classList.toggle("hidden", s !== sectionId));
+}
+
+function setBackground(item) {
+  // Full-screen background = the mood gradient for this question.
+  const bg = el("bgLayer");
+  bg.style.backgroundImage = "none";
+  bg.style.background = (item && item.bg)
+    ? item.bg
+    : "linear-gradient(135deg, #6d28d9, #db2777, #f59e0b)";
+
+  // Small visual at the TOP of the card: your image for this question.
+  el("qVisual").innerHTML = `<img src="${item.image}" alt="">`;
+}
+
+function buildProgress() {
+  const p = el("progress");
+  p.innerHTML = "";
+  QUESTIONS.forEach(() => { const d = document.createElement("div"); d.className = "dot"; p.appendChild(d); });
+}
+
+function updateProgress() {
+  [...el("progress").children].forEach((d, i) => {
+    d.className = "dot" + (i < current ? " done" : i === current ? " current" : "");
+  });
+}
+
+function renderQuestion() {
+  const item = QUESTIONS[current];
+  setBackground(item);
+  el("qcount").textContent = `ప్రశ్న ${current + 1} / ${QUESTIONS.length}`;
+  el("questionText").textContent = item.q;
+  updateProgress();
+
+  const fb = el("feedback");
+  fb.textContent = ""; fb.className = "feedback";
+
+  const box = el("options");
+  box.innerHTML = "";
+  const letters = ["A", "B", "C", "D"];
+  item.options.forEach((opt, i) => {
+    const b = document.createElement("button");
+    b.className = "option";
+    b.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+    b.addEventListener("click", () => handleAnswer(b, i));
+    box.appendChild(b);
+  });
+}
+
+function handleAnswer(btn, index) {
+  if (locked) return;
+  const item = QUESTIONS[current];
+  const fb = el("feedback");
+
+  if (index === item.answer) {
+    locked = true;
+    btn.classList.add("correct");
+    fb.textContent = MSG_CORRECT; fb.className = "feedback ok";
+    buzz(60);
+    [...el("options").children].forEach(o => o.style.pointerEvents = "none");
+    setTimeout(() => {
+      locked = false;
+      current++;
+      if (current < QUESTIONS.length) renderQuestion();
+      else { show("gifts"); setBgFestive(); buzz([40, 60, 40]); }
+    }, 2000);
+  } else {
+    btn.classList.add("wrong");
+    fb.textContent = MSG_WRONG; fb.className = "feedback no";
+    buzz(120);
+    setTimeout(() => btn.classList.remove("wrong"), 900);
+  }
+}
+
+function setBgFestive() {
+  el("bgLayer").style.backgroundImage = "none";
+  el("bgLayer").style.background = "linear-gradient(135deg, #6d28d9, #db2777, #f59e0b)";
+}
+
+/* ---- Countdown then reveal ---- */
+function openGift() {
+  const overlay = document.createElement("div");
+  overlay.id = "countdown";
+  document.body.appendChild(overlay);
+  let n = 3;
+  (function tick() {
+    if (n > 0) {
+      overlay.innerHTML = `<div class="count-num">${n}</div>`;
+      buzz(50); n--; setTimeout(tick, 850);
+    } else {
+      overlay.remove();
+      show("reveal");
+      el("revealMsg").textContent = REVEAL_MESSAGE;
+      el("revealPhoto").src = REVEAL_PHOTO;
+      buzz([60, 80, 120]);
+      launchConfetti();
+    }
+  })();
+}
+
+/* ---- Confetti ---- */
+function launchConfetti() {
+  const canvas = el("confetti");
+  const ctx = canvas.getContext("2d");
+  const resize = () => { canvas.width = innerWidth; canvas.height = innerHeight; };
+  resize(); window.addEventListener("resize", resize);
+  const colors = ["#7c3aed", "#db2777", "#f59e0b", "#16a34a", "#3b82f6", "#fde047"];
+  const pieces = Array.from({ length: 150 }, () => ({
+    x: Math.random() * canvas.width, y: Math.random() * -canvas.height,
+    r: 4 + Math.random() * 7, c: colors[(Math.random() * colors.length) | 0],
+    vy: 2 + Math.random() * 3.5, vx: -1.5 + Math.random() * 3,
+    rot: Math.random() * Math.PI, vr: -0.1 + Math.random() * 0.2
+  }));
+  let frames = 0;
+  (function frame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.y += p.vy; p.x += p.vx; p.rot += p.vr;
+      if (p.y > canvas.height + 20) { p.y = -20; p.x = Math.random() * canvas.width; }
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore();
+    });
+    frames++;
+    if (frames < 420) requestAnimationFrame(frame);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  })();
+}
+
+/* ---- Wire up ---- */
+el("startBtn").addEventListener("click", () => {
+  buildProgress(); renderQuestion(); show("quiz");
+});
+document.querySelectorAll(".gift").forEach(g => g.addEventListener("click", openGift));
+
+// Set an initial festive background for the welcome screen
+setBgFestive();
+</script>
+</body>
+</html>
